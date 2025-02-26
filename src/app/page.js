@@ -101,6 +101,24 @@ const PROJECT_API_URL = `https://${PROJECT_ID}.api.sanity.io/v2023-01-01/data/qu
 
 
 export default function Home() {
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        // Wait until everything is fully loaded
+        const handleLoad = () => {
+          setTimeout(() => {
+            setLoading(false); // Hide loading after all content is loaded
+          }, 1000); // Optional delay for smooth transition
+        };
+    
+        if (document.readyState === "complete") {
+          handleLoad();
+        } else {
+          window.addEventListener("load", handleLoad);
+        }
+    
+        return () => window.removeEventListener("load", handleLoad);
+    }, []);
     // const container = useRef(null);
 
     // const { scrollYProgress } = useScroll({
@@ -276,7 +294,18 @@ export default function Home() {
     }
 
     return (
-            <div ref={containerRef} className="relative flex flex-col items-center">
+            <div>
+                <div>
+                {loading && (
+                    <div className="fixed inset-0 flex flex-col gap-4 items-center justify-center bg-black z-50">
+                        <div className="w-16 h-16 border-4 border-white border-dashed rounded-full animate-spin"></div>
+                        <div className="text-4xl font-josefin text-white/90">LOADING . . .</div>
+                    </div>
+                )}
+                </div>
+            <div ref={containerRef} className={`relative flex flex-col items-center ${loading ? "hidden" : "block"}`} >
+                
+
                 {/* bg-black bg-opacity-25 */}
                 <div className="fixed flex w-full flex justify-center h-1/6 px-36 z-50 ">
                     <div className="md:w-1/4 w-full h-full flex flex-row items-center justify-center gap-5">
@@ -329,7 +358,7 @@ export default function Home() {
                                                     initial={{ y: -50, opacity: 0 }}
                                                     animate={{ y: 0, opacity: 1 }}
                                                     transition={{ duration: 1, ease: "easeOut" }}
-                                                    className="w-3/4 inset-0 z-0 text-center font-poppins font-semibold lg:text-9xl md:text-7xl text-5xl text-white drop-shadow-custom-light opacity-100 drop-shadow-lg tracking-wide"
+                                                    className="w-3/4 inset-0 z-0 text-center font-poppins font-semibold lg:text-9xl md:text-7xl text-5xl text-white drop-shadow-custom-light opacity-100 tracking-wide"
                                                 >
                                                     EUGENIUS EDWARD
                                                 </motion.div>
@@ -581,7 +610,7 @@ export default function Home() {
                     </div>
 
 
-                    <div className="section w-full h-52 bg-[#2e3944] backdrop-blur-md bg-opacity-80 flex flex-col items-center justify-center relative">
+                    <div className="section w-full h-52 bg-[#2e3944] backdrop-blur-md bg-opacity-100 flex flex-col items-center justify-center relative">
                         {/* Soft Top Divider */}
                         <div className="absolute top-0 w-4/5 border-t border-gray-600 opacity-30"></div>
 
@@ -605,7 +634,7 @@ export default function Home() {
                             </div>
 
                             {/* Small Text */}
-                            <div className="font-mono text-slate-500 text-sm tracking-wide">
+                            <div className="font-mono text-slate-500 text-sm tracking-wide drop-shadow-custom-light">
                             Designed by myself ✨
                             </div>
                         </div>
@@ -613,6 +642,6 @@ export default function Home() {
 
                 {/* </div> */}
             </div>
-       
+        </div>
     );
 }
