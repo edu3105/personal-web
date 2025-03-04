@@ -26,7 +26,7 @@ import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import emailjs from "emailjs-com";
 
 import ParallaxSection from "./paralax.js"
-import { Analytics } from "@vercel/analytics/react"
+
 
 // import { client } from "../sanity/client";
 
