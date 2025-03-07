@@ -26,6 +26,11 @@ import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import emailjs from "emailjs-com";
 
 import ParallaxSection from "./paralax.js"
+// import Tilt from 'react-parallax-tilt';
+
+import dynamic from "next/dynamic";
+
+const Tilt = dynamic(() => import("react-parallax-tilt"), { ssr: false });
 
 
 // import { client } from "../sanity/client";
@@ -218,18 +223,18 @@ export default function Home() {
 
     const handleNext = () => {
         setDirection(1)
-        setProjectIndex((prevIndex) => (prevIndex + 2) % projects.length)
+        setProjectIndex((prevIndex) => (prevIndex + 1) % projects.length)
     }
 
     const handlePrev = () => {
         setDirection(-1)
-        setProjectIndex((prevIndex) => (prevIndex - 2 + projects.length) % projects.length)
+        setProjectIndex((prevIndex) => (prevIndex - 1 + projects.length) % projects.length)
     }
 
     const visibleProjects = projects.length > 0
     ? [
         projects[projectIndex],
-        projects[(projectIndex + 1) % projects.length]
+        // projects[(projectIndex + 1) % projects.length]
         ]
     : [];
 
@@ -294,6 +299,15 @@ export default function Home() {
         );
     }
 
+    const [hoveredIndex, setHoveredIndex] = useState(null);
+    // const [isMounted, setIsMounted] = useState(false);
+
+    // useEffect(() => {
+    //     setIsMounted(true); // Ensures the component is only used after mounting
+    //   }, []);
+    
+    // if (!isMounted || !projects) return null
+
     return (
             <div>
                 <div>
@@ -316,7 +330,7 @@ export default function Home() {
                                 <a
                                     href="/pdf/CV_EDU_one.pdf"
                                     download
-                                    className="font-semibold font-poppins md:text-xl text-xs text-white/90 cursor-pointer duration-300 hover:drop-shadow-custom-light hover:scale-110 hover:text-white"
+                                    className="animate-bounce font-bold font-poppins md:text-xl text-xs text-white/90 cursor-pointer duration-300 hover:drop-shadow-custom-light hover:scale-110 hover:text-white"
                                 >
                                     {item}
                                 </a>
@@ -464,11 +478,12 @@ export default function Home() {
                                 >
                                     <ArrowCircleLeftIcon sx={{ fontSize: "4rem" }} className="text-[#D3D9D4]" onClick={handlePrev} />
                                 </motion.div>
-                                <div className="md:w-4/5 w-full h-full overflow-hidden relative">
+                                <div className="lg:w-4/5 w-full h-full overflow-hidden relative">
                                     <AnimatePresence custom={direction} mode="sync">
                                     <motion.div
                                         key={projectIndex}  // Changing the key forces a re-render of the container
-                                        className="absolute h-full inset-0 grid xl:grid-cols-2 grid-rows-2 gap-12 p-8"
+                                        // grid xl:grid-cols-1 grid-rows-2
+                                        className="absolute h-full inset-0 gap-12 lg:p-8 p-4 flex justify-center items-center"
                                         custom={direction}
                                         variants={variants}
                                         initial="initial"
@@ -480,11 +495,63 @@ export default function Home() {
                                         project ? ( // Ensure project is defined
                                             <a
                                             key={project._id || index} // Use index as fallback key
-                                            className="w-11/12 xl:h-[500px] flex flex-col hover:shadow-custom-light "
+                                            className="lg:w-11/12 w-full xl:h-[500px] flex flex-col"
                                             href={project.link}
                                             target="_blank"
                                             >
-                                                <div className="h-2/3 w-full rounded-t-xl ">
+                                                <div className="h-full w-full flex lg:flex-row flex-col items-center justify-left">
+                                                    <Tilt
+                                                        className="lg:w-2/3 w-full h-full"
+                                                        tiltMaxAngleX={35}
+                                                        tiltMaxAngleY={35}
+                                                        perspective={900}
+                                                        // scale={1.1}
+                                                        transitionSpeed={2000}
+                                                        // gyroscope={true}
+                                                        // trackOnWindow={true}
+                                                    >
+                                                        {/* <div > */}
+                                                            {project?.imageUrl ? (
+                                                            <img
+                                                                src={project.imageUrl} 
+                                                                className="object-contain h-full w-full hover:scale-110 transition-transform duration-300"
+                                                                alt={project?.title || "Project Image"}
+                                                            />
+                                                            ) : (
+                                                            <div className="h-full w-full bg-gray-400 flex items-center justify-center rounded-t-xl">
+                                                                <span className="text-[#D3D9D4]">No Image Available</span>
+                                                            </div>
+                                                            )}
+                                                        {/* </div> */}
+                                                    </Tilt>
+                                                    <div className="lg:absolute lg:right-2 lg:w-1/2 w-full lg:px-5 lg:py-12 p-2 flex flex-col gap-2 items-center justify-center bg-[#2e3944] backdrop-blur-lg bg-opacity-50 outline-white rounded-xl hover:shadow-custom-light hover:scale-110 hover:bg-opacity-100 hover:right-12 transition-discrete ease-in-out duration-300">
+                                                        <div className="font-josefin lg:font-bold font-semibold lg:text-6xl md:text-4xl text-lg flex flex-wrap whitespace-normal break-words gap-1 w-full">
+                                                            {project.title.split(" ").map((word, wordIndex) => (
+                                                                <span key={wordIndex} className="inline-block">
+                                                                    {word.split("").map((letter, letterIndex) => (
+                                                                        <span
+                                                                            key={letterIndex}
+                                                                            className={`inline-block transition-transform ${
+                                                                                hoveredIndex == `${wordIndex}-${letterIndex}`
+                                                                                ? "drop-shadow-custom-light scale-150 rotate-12"
+                                                                                : "text-white/90"
+                                                                            }`} 
+                                                                            onMouseEnter={() => setHoveredIndex(`${wordIndex}-${letterIndex}`)}
+                                                                            onMouseLeave={() => setHoveredIndex(null)}
+                                                                        >
+                                                                            {letter}
+                                                                        </span>
+                                                                    ))}  
+                                                                    <span className="inline-block">&nbsp;</span>
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                        <div className="hidden lg:block font-poppins text-sm text-justify">
+                                                            {project.description}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {/* <div className="h-2/3 w-full rounded-t-xl ">
                                                     {project?.imageUrl ? (
                                                     <img
                                                         src={project.imageUrl}
@@ -506,7 +573,7 @@ export default function Home() {
                                                             {project?.description || "No description available"}
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </div> */}
                                             </a>
                                         ) : null // Don't render anything if project is undefined
                                         ))}
