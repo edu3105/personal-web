@@ -483,7 +483,7 @@ export default function Home() {
                                     <motion.div
                                         key={projectIndex}  // Changing the key forces a re-render of the container
                                         // grid xl:grid-cols-1 grid-rows-2
-                                        className="absolute h-full inset-0 gap-12 lg:p-8 p-4 flex justify-center items-center"
+                                        className="absolute h-full inset-0 gap-12 p-8 flex justify-center items-center"
                                         custom={direction}
                                         variants={variants}
                                         initial="initial"
