@@ -108,22 +108,32 @@ const PROJECT_API_URL = `https://${PROJECT_ID}.api.sanity.io/v2023-01-01/data/qu
 
 export default function Home() {
     const [loading, setLoading] = useState(true);
+    const videoRef = useRef(null);
 
     useEffect(() => {
-        // Wait until everything is fully loaded
         const handleLoad = () => {
-          setTimeout(() => {
-            setLoading(false); // Hide loading after all content is loaded
-          }, 1000); // Optional delay for smooth transition
+            setTimeout(() => {
+                setLoading(false); // Hide loading after delay
+            }, 1000);
         };
     
-        if (document.readyState === "complete") {
-          handleLoad();
+        const video = videoRef.current;
+    
+        if (document.readyState === "complete" && video?.readyState >= 3) {
+            handleLoad();
         } else {
-          window.addEventListener("load", handleLoad);
+            window.addEventListener("load", handleLoad);
+            if (video) {
+                video.addEventListener("loadeddata", handleLoad);
+            }
         }
     
-        return () => window.removeEventListener("load", handleLoad);
+        return () => {
+            window.removeEventListener("load", handleLoad);
+            if (video) {
+                video.removeEventListener("loadeddata", handleLoad);
+            }
+        };
     }, []);
     // const container = useRef(null);
 
@@ -314,7 +324,7 @@ export default function Home() {
                 {loading && (
                     <div className="fixed inset-0 flex flex-col gap-4 items-center justify-center bg-black z-50">
                         <div className="w-16 h-16 border-4 border-white border-dashed rounded-full animate-spin"></div>
-                        <div className="text-4xl font-josefin text-white/90">LOADING . . .</div>
+                        <div className="text-4xl font-josefin text-white/90 animate-bounce">LOADING . . .</div>
                     </div>
                 )}
                 </div>
@@ -355,6 +365,7 @@ export default function Home() {
                 {/* sticky top-0 */}
                     <div className="section h-screen w-full overflow-hidden  z-0 relative">
                         <video
+                            ref={videoRef}
                             className="absolute top-0 left-0 w-full h-full object-cover"
                             src="/assets/video2.mp4"
                             autoPlay
