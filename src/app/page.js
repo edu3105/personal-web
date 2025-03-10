@@ -108,32 +108,23 @@ const PROJECT_API_URL = `https://${PROJECT_ID}.api.sanity.io/v2023-01-01/data/qu
 
 export default function Home() {
     const [loading, setLoading] = useState(true);
-    const videoRef = useRef(null);
+    // const videoRef = useRef(null);
 
     useEffect(() => {
+        // Wait until everything is fully loaded
         const handleLoad = () => {
-            setTimeout(() => {
-                setLoading(false); // Hide loading after delay
-            }, 1000);
+          setTimeout(() => {
+            setLoading(false); // Hide loading after all content is loaded
+          }, 1000); // Optional delay for smooth transition
         };
     
-        const video = videoRef.current;
-    
-        if (document.readyState === "complete" && video?.readyState >= 3) {
-            handleLoad();
+        if (document.readyState === "complete") {
+          handleLoad();
         } else {
-            window.addEventListener("load", handleLoad);
-            if (video) {
-                video.addEventListener("loadeddata", handleLoad);
-            }
+          window.addEventListener("load", handleLoad);
         }
     
-        return () => {
-            window.removeEventListener("load", handleLoad);
-            if (video) {
-                video.removeEventListener("loadeddata", handleLoad);
-            }
-        };
+        return () => window.removeEventListener("load", handleLoad);
     }, []);
     // const container = useRef(null);
 
@@ -318,6 +309,17 @@ export default function Home() {
     
     // if (!isMounted || !projects) return null
 
+    const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+    const handleMouseMove = (e) => {
+        const { innerWidth, innerHeight } = window;
+        const x = ((e.clientX / innerWidth) - 0.5) * 10; // Adjust strength
+        const y = ((e.clientY / innerHeight) - 0.5) * 10;
+        setTilt({ x, y });
+    };
+
+    
+
     return (
             <div>
                 <div>
@@ -363,18 +365,21 @@ export default function Home() {
 
                 {/* <div className="w-full h-full relative"> */}
                 {/* sticky top-0 */}
-                    <div className="section h-screen w-full overflow-hidden  z-0 relative">
-                        <video
-                            ref={videoRef}
+                    <div className="section h-screen w-full overflow-hidden  z-0 relative" onMouseMove={handleMouseMove}>
+                        <img
+                            // ref={videoRef}
                             className="absolute top-0 left-0 w-full h-full object-cover"
-                            src="/assets/video2.mp4"
-                            autoPlay
-                            loop
-                            muted
-                        ></video>
+                            // src="/assets/video2.mp4"
+                            src="/assets/bg_alternate_2.jpg"
+                            style={{ transform: `translate(${tilt.x * 3}px, ${tilt.y * 2.5}px)` }}
+                            // autoPlay
+                            // loop
+                            // muted
+                        />
+                        {/* </div> */}
                         {/* bg-[# 212A31] */}
                         <div className="absolute inset-0 bg-center opacity-80 mix-blend-multiply backdrop-blur-lg"></div>
-                        <div className="relative z-10 flex flex-col h-full w-full">
+                        <div className="relative z-10 flex flex-col h-full w-full bg-[#0a0f1d] bg-opacity-25">
                             <div className="flex items-center justify-center h-full text-white">
                                 <div className="w-full h-full flex flex-col items-center">
                                     <div className="flex flex-row justify-self-center items-center h-full w-full gap-2">
