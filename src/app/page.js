@@ -368,10 +368,10 @@ export default function Home() {
                     <div className="section h-screen w-full overflow-hidden  z-0 relative" onMouseMove={handleMouseMove}>
                         <img
                             // ref={videoRef}
-                            className="absolute top-0 left-0 w-full h-full object-cover"
+                            className="absolute top-0 left-0 w-full h-full object-cover floating-bg"
                             // src="/assets/video2.mp4"
                             src="/assets/bg_alternate_2.jpg"
-                            style={{ transform: `translate(${tilt.x * 3}px, ${tilt.y * 2.5}px)` }}
+                            // style={{ transform: `translate(${tilt.x * 3}px, ${tilt.y * 2.5}px)` }}
                             // autoPlay
                             // loop
                             // muted
@@ -381,22 +381,29 @@ export default function Home() {
                         <div className="absolute inset-0 bg-center opacity-80 mix-blend-multiply backdrop-blur-lg"></div>
                         <div className="relative z-10 flex flex-col h-full w-full bg-[#0a0f1d] bg-opacity-25">
                             <div className="flex items-center justify-center h-full text-white">
-                                <div className="w-full h-full flex flex-col items-center">
+                                <div className="w-full h-full flex flex-col items-center transition-transform duration-300 ease-out" style={{ transform: `translate(${tilt.x}px, ${tilt.y}px)` }}>
                                     <div className="flex flex-row justify-self-center items-center h-full w-full gap-2">
                                         <div className="w-full flex flex-col items-center justify-center gap-8 pt-12">
-                                            {/* <div className="relative p-20"> */}
+                                           
                                                 <motion.div 
                                                     initial={{ y: -50, opacity: 0 }}
                                                     animate={{ y: 0, opacity: 1 }}
                                                     transition={{ duration: 1, ease: "easeOut" }}
                                                     className="w-3/4 inset-0 z-0 text-center font-poppins font-semibold lg:text-9xl md:text-7xl text-5xl text-white drop-shadow-custom-light opacity-100 tracking-wide"
                                                 >
-                                                    EUGENIUS EDWARD
+                                                    {"EUGENIUS EDWARD".split(" ").map((word, nameIndex, nameArray) => (
+                                                        <span
+                                                            key={nameIndex}
+                                                            className="inline-block hover:scale-110 transition-transform duration-200"
+                                                        >
+                                                            {/* {word === " " ? "\u00A0" : word} */}
+                                                            {word}
+                                                            {nameIndex !== nameArray.length - 1 && <span className="inline-block">&nbsp;</span>}
+                                                        </span>
+                                                    ))}
                                                 </motion.div>
-                                                {/* <div className="absolute inset-1 inset-x-5 z-10 text-center font-poppins font-medium text-9xl text-[#D3D9D4] drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] opacity-50 drop-shadow-lg tracking-wide text-backdrop-blur-md">
-                                                    EUGENIUS EDWARD
-                                                </div> */}
-                                            {/* </div> */}
+                                                
+                                                
                                             <div className="text-center text-[#D3D9D4] font-josefin text-lg">Enthusiastic | Developer | Unforgettable</div>
                                         </div>
                                     </div>
@@ -437,7 +444,7 @@ export default function Home() {
 
                     {/* bg-background-3 */}
                     <div id="work" className="section z-10 h-auto w-full bg-center bg-[#0a0f1d] pt-28 pb-24 outline-1">
-                        <div className="flex flex-col gap-12 justify-center items-center h-full w-full mx-auto my-24">
+                        <div className="flex flex-col gap-12 justify-center items-center h-full w-full mx-auto mt-12 mb-24">
                             <div className="md:w-3/4 w-full flex justify-center items-center">
                                 <div className="text-center font-josefin xl:text-8xl lg:text-6xl md:text-5xl sm:text-3xl text-xl text-white/90">I do have some WORK experiences...</div>
                             </div>
