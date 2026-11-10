@@ -4,6 +4,8 @@
 
 html {
   scroll-behavior: smooth;
+  /* One scroll = one section. Each section in page.js has snap-start. */
+  scroll-snap-type: y mandatory;
 }
 
 :root {

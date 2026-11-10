@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import {
     motion,
     AnimatePresence,
@@ -17,6 +18,8 @@ import TimelineOppositeContent from "@mui/lab/TimelineOppositeContent";
 import ChurchIcon from "@mui/icons-material/Church";
 import MedicalInformationIcon from "@mui/icons-material/MedicalInformation";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import TerminalIcon from "@mui/icons-material/Terminal";
+import WorkIcon from "@mui/icons-material/Work";
 import TextField from "@mui/material/TextField";
 import { FormControl } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
@@ -35,17 +38,43 @@ import dynamic from "next/dynamic";
 const Tilt = dynamic(() => import("react-parallax-tilt"), { ssr: false });
 
 const menuItems = [
-    { scrollIndex: 1, name: "ABOUT" },
-    { scrollIndex: 2, name: "WORK" },
-    { scrollIndex: 3, name: "PROJECTS" },
-    { scrollIndex: 4, name: "CONTACT" },
-    { scrollIndex: 5, name: "RESUME" },
+    { name: "ABOUT" },
+    { name: "WORK" },
+    { name: "PROJECTS" },
+    { name: "CONTACT" },
+    { name: "RESUME" },
 ];
+
+// Sanity's iconName holds either a bare name ("TerminalIcon") or a JSX
+// snippet ("<ChurchIcon sx={...} />"), so look up the first "...Icon" word.
+const TIMELINE_ICONS = {
+    AccountBalanceIcon,
+    ChurchIcon,
+    MedicalInformationIcon,
+    TerminalIcon,
+};
+
+function TimelineIcon({ iconName }) {
+    const name = (iconName || "").match(/[A-Za-z]+Icon/)?.[0];
+    const Icon = TIMELINE_ICONS[name] ?? WorkIcon;
+    return <Icon sx={{ fontSize: "1.25rem" }} className="text-white" />;
+}
+
+// Sanity's date is free text ("Jul - Sep 2024", "Aug 2025 - Now"), which
+// new Date() can't parse, so sort by the first month and year it mentions.
+const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+
+function startDateValue(dateText) {
+    const text = dateText || "";
+    const year = Number(text.match(/\d{4}/)?.[0] ?? 0);
+    const month = MONTHS.indexOf(text.match(/[a-z]{3}/i)?.[0].toLowerCase());
+    return year * 12 + Math.max(month, 0);
+}
 
 const PROJECT_ID = "umqvyywd";
 const DATASET = "production";
 const QUERY = encodeURIComponent(
-    `*[_type == "post"]|order(date desc){_id, date, iconName, iconBg, content}`
+    `*[_type == "post"]{_id, date, iconName, iconBg, content}`
 );
 const API_URL = `https://${PROJECT_ID}.api.sanity.io/v2023-01-01/data/query/${DATASET}?query=${QUERY}`;
 
@@ -62,10 +91,6 @@ const PERSONAL_IMAGE_API_URL = `https://${PROJECT_ID}.api.sanity.io/v2023-01-01/
 export default function Home() {
     // State declarations
     const [loading, setLoading] = useState(true);
-    const containerRef = useRef(null);
-    const sectionsRef = useRef([]);
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [isScrolling, setIsScrolling] = useState(false);
     const [personalImage, setPersonalImage] = useState([]);
     const [timelineData, setTimelineData] = useState([]);
     const [projects, setProjects] = useState([]);
@@ -90,39 +115,8 @@ export default function Home() {
         return () => window.removeEventListener("load", handleLoad);
     }, []);
 
-    // Section scroll effect
-    useEffect(() => {
-        const container = containerRef.current;
-        if (!container) return;
-        sectionsRef.current = Array.from(
-            container.querySelectorAll(".section")
-        );
-        if (!sectionsRef.current.length) return;
-        const handleScroll = (event) => {
-            event.preventDefault();
-            if (isScrolling) return;
-            const deltaY = event.deltaY;
-            let newIndex = currentIndex;
-            if (deltaY > 0) {
-                newIndex = Math.min(
-                    currentIndex + 1,
-                    sectionsRef.current.length - 1
-                );
-            } else if (deltaY < 0) {
-                newIndex = Math.max(currentIndex - 1, 0);
-            }
-            if (newIndex !== currentIndex) {
-                setIsScrolling(true);
-                setCurrentIndex(newIndex);
-                sectionsRef.current[newIndex]?.scrollIntoView({
-                    behavior: "smooth",
-                });
-                setTimeout(() => setIsScrolling(false), 800);
-            }
-        };
-        container.addEventListener("wheel", handleScroll, { passive: false });
-        return () => container.removeEventListener("wheel", handleScroll);
-    }, [currentIndex, isScrolling]);
+    // Section-by-section scrolling is handled by CSS scroll-snap
+    // (see globals.css and the snap-start classes on each section).
 
     // Fetch timeline data
     useEffect(() => {
@@ -132,8 +126,9 @@ export default function Home() {
                 if (!response.ok)
                     throw new Error(`Failed to fetch: ${response.statusText}`);
                 const { result } = await response.json();
+                // Newest first
                 const sortedData = result.sort(
-                    (b, a) => new Date(b.date) - new Date(a.date)
+                    (a, b) => startDateValue(b.date) - startDateValue(a.date)
                 );
                 setTimelineData(sortedData);
             } catch (error) {
@@ -258,12 +253,11 @@ export default function Home() {
             </div>
             {/* Main Content */}
             <div
-                ref={containerRef}
                 className={`relative flex flex-col items-center ${loading ? "hidden" : "block"}`}
             >
                 {/* Navigation Bar */}
-                <div className="fixed flex w-full justify-center h-1/6 px-36 z-50 ">
-                    <div className="md:w-1/4 w-full h-full flex flex-row items-center justify-center gap-5">
+                <div className="fixed flex w-full justify-center h-1/6 px-4 md:px-36 z-50 bg-gradient-to-b from-[#0a0f1d]/80 to-transparent">
+                    <div className="md:w-1/4 w-full h-full flex flex-row items-center justify-center gap-2 md:gap-5">
                         {menuItems.map((item, index) => {
                             const isResume = item.name === "RESUME";
                             const linkProps = isResume
@@ -274,18 +268,10 @@ export default function Home() {
                                           "animate-bounce font-bold font-poppins md:text-xl text-xs text-white/90 cursor-pointer duration-300 hover:drop-shadow-custom-light hover:scale-110 hover:text-white",
                                   }
                                 : {
+                                      // Plain anchor; smooth scrolling comes from globals.css
                                       href: `#${item.name.toLowerCase()}`,
                                       className:
                                           "font-semibold font-poppins md:text-xl text-xs text-white/90 duration-300 hover:drop-shadow-custom-light hover:scale-110 hover:text-white",
-                                      onClick: (e) => {
-                                          e.preventDefault();
-                                          setCurrentIndex(item.scrollIndex);
-                                          sectionsRef.current[
-                                              item.scrollIndex
-                                          ]?.scrollIntoView({
-                                              behavior: "smooth",
-                                          });
-                                      },
                                   };
                             return (
                                 <React.Fragment key={item.name}>
@@ -302,18 +288,17 @@ export default function Home() {
                 </div>
                 {/* Hero Section */}
                 <div
-                    className="section h-screen w-full overflow-hidden  z-0 relative"
+                    className="snap-start h-screen w-full overflow-hidden  z-0 relative"
                     onMouseMove={handleMouseMove}
                 >
-                    <img
-                        // ref={videoRef}
-                        className="absolute top-0 left-0 w-full h-full object-cover floating-bg"
-                        // src="/assets/video2.mp4"
-                        src="/assets/bg_alternate_2.jpg"
-                        // style={{ transform: `translate(${tilt.x * 3}px, ${tilt.y * 2.5}px)` }}
-                        // autoPlay
-                        // loop
-                        // muted
+                    {/* Compressed from bg_alternate_2.jpg (3.6 MB -> 431 KB); next/image also serves smaller sizes to phones */}
+                    <Image
+                        src="/assets/hero_bg.webp"
+                        alt=""
+                        fill
+                        priority
+                        sizes="100vw"
+                        className="object-cover floating-bg"
                     />
                     {/* </div> */}
                     {/* bg-[# 212A31] */}
@@ -374,7 +359,10 @@ export default function Home() {
                     </div>
                 </div>
 
-                <div className="section z-10 h-screen w-full bg-center bg-[#0a0f1d] flex justify-center items-center pt-28 top-full">
+                <div
+                    id="about"
+                    className="snap-start z-10 h-screen w-full bg-center bg-[#0a0f1d] flex justify-center items-center pt-28 top-full"
+                >
                     <div className="flex justify-center items-center h-4/5 w-10/12 gap-12 outline outline-2 bg-[#2e3944] backdrop-blur-lg bg-opacity-50 outline-white rounded-xl shadow-custom-light">
                         <div className="h-full lg:w-3/4 w-5/6 flex lg:flex-row flex-col gap-12 items-center justify-center">
                             <motion.div
@@ -454,7 +442,7 @@ export default function Home() {
                 {/* Work Experience Section */}
                 <div
                     id="work"
-                    className="section z-10 h-screen w-full bg-center bg-[#0a0f1d] pt-28 pb-24 outline-1"
+                    className="snap-start z-10 h-screen w-full bg-center bg-[#0a0f1d] pt-28 pb-24 outline-1"
                 >
                     <div className="flex flex-col gap-12 justify-center items-center h-full w-full mx-auto mt-12 mb-24">
                         <div className="md:w-3/4 w-full flex justify-center items-center">
@@ -462,7 +450,7 @@ export default function Home() {
                                 I do have some WORK experiences...
                             </div>
                         </div>
-                        <div className="xl:w-1/2 w-5/6 flex bg-[#748D92] shadow-custom-light bg-opacity-25 p-12 overflow-x-auto rounded-xl">
+                        <div className="xl:w-1/2 w-5/6 flex bg-[#748D92] shadow-custom-light bg-opacity-25 p-4 md:p-12 overflow-x-auto rounded-xl">
                             <Timeline position="alternate">
                                 {timelineData.map((item) => (
                                     <TimelineItem
@@ -479,7 +467,9 @@ export default function Home() {
                                             <TimelineDot
                                                 className={`w-8 h-8 flex items-center justify-center !bg-[#124E66] outline outline-2`}
                                             >
-                                                {item.icon}
+                                                <TimelineIcon
+                                                    iconName={item.iconName}
+                                                />
                                             </TimelineDot>
                                             <TimelineConnector className="h-8" />
                                         </TimelineSeparator>
@@ -500,7 +490,7 @@ export default function Home() {
                 {/* Projects Section */}
                 <div
                     id="projects"
-                    className="section z-10 h-screen w-full bg-[#0a0f1d] p-24"
+                    className="snap-start z-10 h-screen w-full bg-[#0a0f1d] px-4 py-24 md:p-24"
                 >
                     <div className="flex flex-col gap-12 justify-center items-center h-full w-full mx-auto">
                         <div className="font-josefin text-white/90 font-bold text-left w-full text-3xl">
@@ -727,7 +717,7 @@ export default function Home() {
                 {/* Contact Section */}
                 <div
                     id="contact"
-                    className="section z-10 w-full h-screen flex flex-col"
+                    className="snap-start z-10 w-full h-screen flex flex-col"
                 >
                     <div className="w-full h-full bg-[#0a0f1d] flex lg:flex-row flex-col lg:items-baseline lg:pt-24 items-center justify-center">
                         <div className="lg:w-2/5 w-full flex flex-col gap-12 justify-center items-center pt-16">
@@ -848,7 +838,7 @@ export default function Home() {
                     {/* <div className="w-full h-1/5 bg-emerald-900"></div>  */}
                 </div>
                 {/* Footer Section */}
-                <div className="section w-full h-52 bg-[#2e3944] backdrop-blur-md bg-opacity-100 flex flex-col items-center justify-center relative">
+                <div className="snap-end w-full h-52 bg-[#2e3944] backdrop-blur-md bg-opacity-100 flex flex-col items-center justify-center relative">
                     {/* Soft Top Divider */}
                     <div className="absolute top-0 w-4/5 border-t border-gray-600 opacity-30"></div>
 
